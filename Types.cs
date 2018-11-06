@@ -14,7 +14,7 @@ namespace Types {
             Name = name;
         }
 
-        public override string ToString() => Name;
+        public override string ToString() => $"{Name}";
     }
 
     // 类型变量
@@ -27,27 +27,48 @@ namespace Types {
     }
 
     public class Composite : Monomorphic {
-
+        public Monomorphic Ctor;
+        public Monomorphic Argument;
+        public Composite(Monomorphic ctor, Monomorphic argument) {
+            Ctor = ctor;
+            Argument = argument;
+        }
+        public override string ToString() {
+            if (Argument.GetType() == typeof(Composite)) {
+                return $"{Ctor.ToString()} ({Argument.ToString()})";
+            } else {
+                return $"{Ctor.ToString()} {Argument.ToString()}";
+            }
+        }
     }
 
     public static class Operations {
+        static Dictionary<string, Slot> SlotTable = new Dictionary<string, Slot>();
+
+        public static Slot slot(string name) {
+            if (SlotTable.ContainsKey(name)) return SlotTable[name];
+            var t = new Slot(name);
+            SlotTable.Add(name, t);
+            return t;
+        }
+
         static Dictionary<string, Primitive> PrimitiveTable = new Dictionary<string, Primitive>();
-        public static Primitive pm(string name, string kind) {
+        public static Primitive pm(string name, string kind = "") {
             if (PrimitiveTable.ContainsKey(name)) return PrimitiveTable[name];
             var t = new Primitive(name, kind);
             PrimitiveTable.Add(name, t);
             return t;
         }
-        public static Composite CompositeType(string name, string kind) {
-            return new Composite();
+        public static Composite ct(Monomorphic ctor, Monomorphic argument) {
+            return new Composite(ctor, argument);
         }
 
-        public static void Arrow() {
-
+        public static Composite Arrow(Monomorphic p, Monomorphic q) {
+            return ct(ct(pm("[->]"), p), q);
         }
 
-        public static void Product() {
-
+        public static Composite Product(Monomorphic p, Monomorphic q) {
+            return ct(ct(pm("[*]"), p), q);
         }
     }
 }
